@@ -36,6 +36,10 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
       }
     }
 
+    def isPrivateDef(defn: Defn): Boolean = {
+      defn.symbol.info.map(_.isPrivate).getOrElse(false)
+    }
+
     def registerUnused(tree: Tree, kind: Kind): Unit = {
       val unused = UnusedSymbol(tree.pos, tree.symbol, kind)
       unusedSyms(unused.sym.normalized) = unused
@@ -48,7 +52,7 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
       templ.stats.foreach { stat =>
         stat match {
           case defn: Defn
-              if defn.symbol.info.map(_.isPrivate).getOrElse(false) =>
+              if isPrivateDef(defn) =>
             registerUnused(defn, Kind.Private)
           case _ => ()
         }
@@ -125,7 +129,9 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
             case other =>
               if (other.symbol.isPackage)
                 registerUnusedPkg(other)
-              else
+              else if (
+                !other.symbol.normalized.value.startsWith("scala.language.")
+              )
                 registerUnused(other, Kind.Import)
           }
         }
