@@ -44,10 +44,7 @@ Unused private field 'field'
     private val field = 1 // assert: Unused
   }
 
-  case class PrivateClass(private val x: Int) { /* assert: Unused
-                          ^^^^^^^^^^^^^^^^^^
-Unused private field 'x'
-    */
+  case class PrivateClass() { // should be asserted
     private def foo(x: Int) = ??? // assert: Unused
     private object Foo { // assert: Unused
       def x = 1

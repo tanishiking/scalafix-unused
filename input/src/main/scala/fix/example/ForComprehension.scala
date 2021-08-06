@@ -5,6 +5,15 @@ rule = Unused
 package fix.example
 
 class ForComprehension {
+  object Foo {
+    for {
+      x <- Some(1 -> 2)
+      y = 3
+      z = 3 // assert: Unused
+      (a, b) = x
+    } yield (a + b + y)
+  }
+
   for {
     a <- List(1)
     b <- List(1)
