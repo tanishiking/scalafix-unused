@@ -167,17 +167,20 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
         registerUnused(tree, Kind.Patvar)
 
       case tree: Importer if config.imports =>
-        tree.importees.foreach { importee =>
-          importee match {
-            case wildcard: Importee.Wildcard =>
-              registerUnusedPkg(tree.ref)
-            case other =>
-              if (other.symbol.isPackage)
-                registerUnusedPkg(other)
-              else if (
-                !other.symbol.normalized.value.startsWith("scala.language.")
-              )
-                registerUnused(other, Kind.Import)
+        val isExport = tree.parent.map(_.is[Export]).getOrElse(false)
+        if (!isExport) {
+          tree.importees.foreach { importee =>
+            importee match {
+              case wildcard: Importee.Wildcard =>
+                registerUnusedPkg(tree.ref)
+              case other =>
+                if (other.symbol.isPackage)
+                  registerUnusedPkg(other)
+                else if (
+                  !other.symbol.normalized.value.startsWith("scala.language.")
+                )
+                  registerUnused(other, Kind.Import)
+            }
           }
         }
 

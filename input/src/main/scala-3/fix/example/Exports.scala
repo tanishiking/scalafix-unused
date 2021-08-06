@@ -15,6 +15,6 @@ trait Encoder[-T] {
 
 trait Codec[T](decode: Decoder[T], encode: Encoder[T])
   extends Decoder[T] with Encoder[T] {
-  export decode._ // assert: Unused
-  export encode._ // assert: Unused
+  export decode._
+  export encode._
 }
