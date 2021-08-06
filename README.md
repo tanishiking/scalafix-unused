@@ -9,7 +9,7 @@ sbt ~tests/test
 
 
 ## TODO
-- [ ] structural type
+- [x] structural type
 - [ ] Better diagnositc message for Anonymous given: see AnonymousGiven.scala
 - [ ] Do not mark as used the param who referred by named argument. see: Issue2116.scala
 - [x] Do not mark as used the param who has overloaded symbol. see: Methods.scala

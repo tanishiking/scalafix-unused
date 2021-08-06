@@ -28,7 +28,7 @@ class C9(private[this] var x: Int)
 
 object N {
   val anonClass = new C7(42) {
-    val local = ??? // assert: Unused
+    val local = ???
   }
   val anonFun = List(1).map { i =>
     val local = 2

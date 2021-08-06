@@ -30,6 +30,9 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
     val unusedImports =
       collection.mutable.HashMap[NormalizedSymbol, UnusedSymbol]()
 
+    // Used for store the symbols that shouldn't be reported unused
+    val visited = collection.mutable.Set[Symbol]()
+
     // Symbols that appear in synthetics section
     // such as implicit parameter application and implicit conversion
     val syntheticRef = mutable.Set[NormalizedSymbol]()
@@ -42,11 +45,13 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
     }
 
     def registerUnused(tree: Tree, kind: Kind): Unit = {
-      val unused = UnusedSymbol(tree.pos, tree.symbol, kind)
-      if (kind == Kind.Import) {
-        unusedImports(unused.sym.ensureNormalized) = unused
-      } else {
-        unusedSyms(unused.sym) = unused
+      if (!visited.contains(tree.symbol)) {
+        val unused = UnusedSymbol(tree.pos, tree.symbol, kind)
+        if (kind == Kind.Import) {
+          unusedImports(unused.sym.ensureNormalized) = unused
+        } else {
+          unusedSyms(unused.sym) = unused
+        }
       }
     }
     def registerUnusedPkg(tree: Tree): Unit = {
@@ -62,7 +67,19 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
         }
       }
     }
-
+    def registerRefinements(refinements: List[Stat]): Unit = {
+      refinements.foreach { stat =>
+        stat match {
+          case defn: Defn =>
+            if (config.privates && isPrivateDef(defn))
+              registerUnused(defn, Kind.Private)
+            visited += defn.symbol
+          case decl: Decl =>
+            visited += decl.symbol
+          case _ => ()
+        }
+      }
+    }
 
     def resolveUnusedImportPkg(sym: Symbol, pos: Option[Position]): Unit = {
       val normalized = sym.ensureNormalized
@@ -118,6 +135,11 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
             registerUnused(param, Kind.Private)
         }
 
+      case tree: Type.Refine =>
+        registerRefinements(tree.stats)
+      case tree: Term.NewAnonymous =>
+        registerRefinements(tree.templ.stats)
+
       // Register unused pattern value
       // e.g.
       // ```
@@ -165,9 +187,6 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
           // if defn.pos.contains(tree.pos) = true
           // that means the tree is a definition itself, and do not mark it as used
           case Some(defn) if !defn.pos.contains(tree.pos) =>
-            if (sym.normalized.value == "fix.example.Methods.m5.xxx.") {
-              println(sym)
-            }
             unusedSyms.remove(sym)
           case _ => ()
         }
@@ -227,8 +246,9 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
     }
   }
 
-
-  private def isPrivateDef(defn: Defn)(implicit doc: SemanticDocument): Boolean = {
+  private def isPrivateDef(
+      defn: Defn
+  )(implicit doc: SemanticDocument): Boolean = {
     defn.symbol.info.map(_.isPrivate).getOrElse(false) ||
     defn.mods.exists(
       mod => // in case SemanticDB doesn't has access information (< 3.0.2)

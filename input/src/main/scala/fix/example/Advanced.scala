@@ -13,12 +13,13 @@ class C[T] {
 }
 
 class Structural {
-  def s1: { val x: Int } = ??? // assert: Unused
-  def s2 = new { val x: Int = ??? } // assert: Unused
+  def s1: { val x: Int } = ???
+  def s2 = new { val x: Int = ??? }
   def s3 = new { def m(x: Int): Int = ??? } /* assert: Unused
                        ^^^^^^
 Unused parameter 'x'
 */
+  def s4 = new { def m(x: Int): Int = x }
 }
 
 class Existential {
