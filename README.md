@@ -12,9 +12,9 @@ sbt ~tests/test
 - [ ] structural type
 - [ ] Better diagnositc message for Anonymous given: see AnonymousGiven.scala
 - [ ] Do not mark as used the param who referred by named argument. see: Issue2116.scala
-- [ ] Do not mark as used the param who has overloaded symbol. see: Methods.scala
+- [x] Do not mark as used the param who has overloaded symbol. see: Methods.scala
 - [ ] Do not reporte unused for prefix import type in Scala3, see: PrefixScala3.scala
-- [ ] private object should also be reported in Scala3, see: Objects.scala
+- [x] private object should also be reported in Scala3, see: Objects.scala
 - [ ] should be able to parse `package endmarkers:` scalameta parser issue?
 - [ ] TODO: test scala3 detect unused field (enum, given, private extension method)
 - [ ] export shouldn't be asserted? see: Exports.scala, ExportsPackage.scala

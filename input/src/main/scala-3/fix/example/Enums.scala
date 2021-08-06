@@ -11,7 +11,7 @@ object Enums:
     import Colour.Red
     case Red, Green, Blue
 
-  enum Directions:
+  private enum Directions: // assert: Unused
     case North, East, South, West
 
   enum Suits derives CanEqual:
