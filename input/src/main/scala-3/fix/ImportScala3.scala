@@ -54,22 +54,19 @@ object A:
 
 object B:
   import A.*
-  // TODO: should be asserted
-  import A.given
+  import A.given // assert: Unused
   def print =
     f(using tc)
     println(v)
 
 object C:
   import A.*
-  // TODO: should be asserted
-  import A.given
+  import A.given // assert: Unused
   def print =
     println(v)
 
 object D:
-  // TODO: given Int should be asserted
   // TODO given String shouldn't be asserted
-  import A.given Int
+  import A.given Int // assert: Unused
   import A.given String // assert: Unused
   println(ts)

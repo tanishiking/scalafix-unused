@@ -2,7 +2,7 @@ package fix
 
 import scalafix.v1._
 import scala.meta._
-import collection.mutable
+import collection.{mutable => m}
 
 import metaconfig.Configured
 import scala.annotation.unused
@@ -10,7 +10,8 @@ import scala.annotation.unused
 case class UnusedSymbol(
     pos: Position,
     sym: Symbol,
-    kind: Kind
+    kind: Kind,
+    scope: Option[Position.Range] = None
 )
 
 class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
@@ -24,19 +25,21 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
       .getOrElse("Unused")(this.config)
       .map { newConfig => new Unused(newConfig) }
   override def fix(implicit doc: SemanticDocument): Patch = {
-    val unusedPkgs = collection.mutable.HashMap[Symbol, UnusedSymbol]()
-    val unusedSyms = collection.mutable.HashMap[Symbol, UnusedSymbol]()
+    val unusedSyms = m.HashMap[Symbol, UnusedSymbol]()
 
+    val unusedPkgs = new m.HashMap[Symbol, m.Set[UnusedSymbol]]
+      with m.MultiMap[Symbol, UnusedSymbol]
     // The key symbol should be normalized, and symbol in UnusedSymbol shouldn't be normalized
     val unusedImports =
-      collection.mutable.HashMap[NormalizedSymbol, UnusedSymbol]()
+      new m.HashMap[NormalizedSymbol, m.Set[UnusedSymbol]]
+        with m.MultiMap[NormalizedSymbol, UnusedSymbol]
 
     // Used for store the symbols that shouldn't be reported unused
-    val visited = collection.mutable.Set[Symbol]()
+    val visited = m.Set[Symbol]()
 
     // Symbols that appear in synthetics section
     // such as implicit parameter application and implicit conversion
-    val syntheticRef = mutable.Set[NormalizedSymbol]()
+    val syntheticRef = m.Set[NormalizedSymbol]()
 
     doc.synthetics.foreach { tree =>
       Synthetics.foreachSymbol(tree) { sym =>
@@ -45,19 +48,23 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
       }
     }
 
-    def registerUnused(tree: Tree, kind: Kind): Unit = {
+    def registerUnused(
+        tree: Tree,
+        kind: Kind,
+        scope: Option[Position.Range] = None
+    ): Unit = {
       if (!visited.contains(tree.symbol)) {
-        val unused = UnusedSymbol(tree.pos, tree.symbol, kind)
+        val unused = UnusedSymbol(tree.pos, tree.symbol, kind, scope)
         if (kind == Kind.Import) {
-          unusedImports(unused.sym.ensureNormalized) = unused
+          unusedImports.addBinding(unused.sym.ensureNormalized, unused)
         } else {
           unusedSyms(unused.sym) = unused
         }
       }
     }
-    def registerUnusedPkg(tree: Tree): Unit = {
-      val unused = UnusedSymbol(tree.pos, tree.symbol, Kind.ImportPkg)
-      unusedPkgs(unused.sym.normalized) = unused
+    def registerUnusedPkg(tree: Tree, scope: Option[Position.Range]): Unit = {
+      val unused = UnusedSymbol(tree.pos, tree.symbol, Kind.ImportPkg, scope)
+      unusedPkgs.addBinding(unused.sym.normalized, unused)
     }
     def registerPrivateFields(templ: Template): Unit = {
       templ.stats.foreach { stat =>
@@ -84,19 +91,22 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
 
     def resolveUnusedImportPkg(sym: Symbol, pos: Option[Position]): Unit = {
       val normalized = sym.ensureNormalized
-      var longestPrefix: Symbol = Symbol.None
-      unusedPkgs.foreach { case (pkg, unused) =>
+      var longestPrefix: Option[(Symbol, UnusedSymbol)] = None
+      unusedPkgs.foreach { case (pkg, unuseds) =>
         val pkgPrefix = pkg.normalized.value
-        if (
-          normalized.value.startsWith(pkgPrefix) &&
-          pos.map(p => !unused.pos.contains(p)).getOrElse(true) &&
-          pkgPrefix.length > longestPrefix.value.length
-        ) {
-          longestPrefix = pkg.normalized
+        unuseds.find(unused =>
+          !unused.pos.contains(pos) && unused.scope.cover(pos)
+        ) match {
+          case Some(found)
+              if normalized.value.startsWith(pkgPrefix) &&
+                pkgPrefix.length > longestPrefix.map(_._1.value.length).getOrElse(0) =>
+            longestPrefix = Some((pkg.normalized, found))
+          case _ => ()
         }
       }
-      if (!longestPrefix.isNone) {
-        unusedPkgs.remove(longestPrefix)
+      longestPrefix match {
+        case Some((key, value)) => unusedPkgs.removeBinding(key, value)
+        case None => ()
       }
     }
 
@@ -169,16 +179,25 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
         val isExport = tree.parent.map(_.is[Export]).getOrElse(false)
         if (!isExport) {
           tree.importees.foreach { importee =>
+            val scope = for {
+              importTree <- tree.parent
+              parent <- importTree.parent
+              range <- parent.pos match {
+                case range: Position.Range if parent.isNot[Pkg] => Some(range)
+                case _                                          => None
+              }
+            } yield range
+
             importee match {
               case wildcard: Importee.Wildcard =>
-                registerUnusedPkg(tree.ref)
+                registerUnusedPkg(tree.ref, scope)
               case other =>
                 if (other.symbol.isPackage)
-                  registerUnusedPkg(other)
+                  registerUnusedPkg(other, scope)
                 else if (
                   !other.symbol.normalized.value.startsWith("scala.language.")
                 )
-                  registerUnused(other, Kind.Import)
+                  registerUnused(other, Kind.Import, scope)
             }
           }
         }
@@ -195,8 +214,11 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
 
         val normalized = sym.ensureNormalized
         unusedImports.get(normalized) match {
-          case Some(defn) if !defn.pos.contains(tree.pos) =>
-            unusedImports.remove(normalized)
+          case Some(defns) =>
+            defns.foreach { defn =>
+              if (!defn.pos.contains(tree.pos) && defn.scope.cover(tree.pos))
+                unusedImports.removeBinding(normalized, defn)
+            }
           case _ => ()
         }
 
@@ -218,11 +240,11 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
       Patch.lint(UnusedDiagnostic(unused))
     }
 
-    val patches2 = unusedImports.values.map { unused =>
+    val patches2 = unusedImports.values.flatten.map { unused =>
       Patch.lint(UnusedDiagnostic(unused))
     }
 
-    val patches3 = unusedPkgs.values.map { pkg =>
+    val patches3 = unusedPkgs.values.flatten.map { pkg =>
       Patch.lint(UnusedDiagnostic(pkg))
     }
 
