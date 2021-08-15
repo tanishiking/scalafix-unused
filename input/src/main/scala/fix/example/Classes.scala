@@ -30,7 +30,7 @@ object N {
   val anonClass = new C7(42) {
     val local = ???
   }
-  val anonFun = List(1).map { i =>
+  val anonFun = List(1).map { i => // assert: Unused
     val local = 2
     local + 2
   }

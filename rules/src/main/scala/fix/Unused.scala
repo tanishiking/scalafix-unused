@@ -111,6 +111,11 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
     }
 
     doc.tree.collect {
+      case tree: Term.Function if config.params =>
+        tree.params.foreach { param =>
+          if (param.name.value.nonEmpty) // (_: Int) => 42 has name ''
+            registerUnused(param, Kind.Param)
+        }
       case tree: Defn.Def if config.params =>
         for {
           params <- tree.paramss

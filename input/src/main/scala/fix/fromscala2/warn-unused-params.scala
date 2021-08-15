@@ -98,7 +98,7 @@ trait Proofs {
 }
 
 trait Anonymous {
-  def f = (i: Int) => 42
+  def f = (i: Int) => 42 // assert: Unused
 
   def f1 = (_: Int) => 42     // no warn underscore parameter (a fresh name)
 
