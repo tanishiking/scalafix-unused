@@ -14,6 +14,11 @@ case class UnusedSymbol(
     scope: Option[Position.Range] = None
 )
 
+case class SymbolOccurrence(
+    sym: Symbol,
+    pos: Position
+)
+
 class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
   import Symbols._
   import Enrichments._
@@ -36,6 +41,8 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
 
     // Used for store the symbols that shouldn't be reported unused
     val visited = m.Set[Symbol]()
+
+    val occurrences = m.Set[SymbolOccurrence]()
 
     // Symbols that appear in synthetics section
     // such as implicit parameter application and implicit conversion
@@ -95,18 +102,20 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
       unusedPkgs.foreach { case (pkg, unuseds) =>
         val pkgPrefix = pkg.normalized.value
         unuseds.find(unused =>
-          !unused.pos.contains(pos) && unused.scope.cover(pos)
+          !unused.pos.contains(pos) && unused.scope.overlaps(pos)
         ) match {
           case Some(found)
               if normalized.value.startsWith(pkgPrefix) &&
-                pkgPrefix.length > longestPrefix.map(_._1.value.length).getOrElse(0) =>
+                pkgPrefix.length > longestPrefix
+                  .map(_._1.value.length)
+                  .getOrElse(0) =>
             longestPrefix = Some((pkg.normalized, found))
           case _ => ()
         }
       }
       longestPrefix match {
         case Some((key, value)) => unusedPkgs.removeBinding(key, value)
-        case None => ()
+        case None               => ()
       }
     }
 
@@ -210,26 +219,36 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
         }
 
       case tree if !tree.symbol.isNone && !tree.is[Defn] =>
-        val sym = tree.symbol
-        unusedSyms.get(sym) match {
-          // if defn.pos.contains(tree.pos) = true
-          // that means the tree is a definition itself, and do not mark it as used
-          case Some(defn) if !defn.pos.contains(tree.pos) =>
-            unusedSyms.remove(sym)
-          case _ => ()
-        }
+        val occurrence = SymbolOccurrence(
+          tree.symbol,
+          tree.pos
+        )
+        occurrences.add(occurrence)
+    }
 
-        val normalized = sym.ensureNormalized
-        unusedImports.get(normalized) match {
-          case Some(defns) =>
-            defns.foreach { defn =>
-              if (!defn.pos.contains(tree.pos) && defn.scope.cover(tree.pos))
-                unusedImports.removeBinding(normalized, defn)
-            }
-          case _ => ()
-        }
+    occurrences.foreach { occurrence =>
+      val sym = occurrence.sym
+      unusedSyms.get(sym) match {
+        // if defn.pos.contains(tree.pos) = true
+        // that means the tree is a definition itself, and do not mark it as used
+        case Some(defn) if !defn.pos.overlaps(occurrence.pos) =>
+          unusedSyms.remove(sym)
+        case _ => ()
+      }
 
-        resolveUnusedImportPkg(sym, Some(tree.pos))
+      val normalized = sym.ensureNormalized
+      unusedImports.get(normalized) match {
+        case Some(defns) =>
+          defns.foreach { defn =>
+            if (
+              !defn.pos
+                .overlaps(occurrence.pos) && defn.scope.overlaps(occurrence.pos)
+            )
+              unusedImports.removeBinding(normalized, defn)
+          }
+        case _ => ()
+      }
+      resolveUnusedImportPkg(sym, Some(occurrence.pos))
     }
 
     // Mark as used if the symbols found from synthetic section

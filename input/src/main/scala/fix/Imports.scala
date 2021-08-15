@@ -8,8 +8,8 @@ Unused.patvars = false
 */
 package fix
 
-import scala.collection.mutable.HashMap /* assert: Unused
-                                ^^^^^^^
+import scala.collection.immutable.HashMap /* assert: Unused
+                                  ^^^^^^^
 Unused import 'HashMap'
 */
 

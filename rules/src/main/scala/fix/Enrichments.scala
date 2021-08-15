@@ -9,26 +9,26 @@ import Symbols._
 object Enrichments {
 
   implicit class RichPosition(pos: Position) extends AnyRef {
-    def contains(other: Position): Boolean =
-      pos.start <= other.start && other.end <= pos.end
+    def overlaps(other: Position): Boolean =
+      pos.start <= other.end && other.start <= pos.end
 
     def contains(other: Option[Position]): Boolean =
       other match {
-        case Some(other) => contains(other)
+        case Some(other) => overlaps(other)
         case None        => false
       }
   }
 
   implicit class RichRange(range: Option[Position.Range]) extends AnyRef {
-    def cover(other: Position): Boolean =
+    def overlaps(other: Position): Boolean =
       range match {
-        case Some(range) => range.contains(other)
+        case Some(range) => range.overlaps(other)
         case None => true
       }
 
-    def cover(other: Option[Position]): Boolean =
+    def overlaps(other: Option[Position]): Boolean =
       other match {
-        case Some(other) => cover(other)
+        case Some(other) => overlaps(other)
         case None => true
       }
   }

@@ -19,9 +19,8 @@ class Bippy(a: Int, b: Int) {
 }
 object Bippy {
   def hi(x: Bippy) = x.HI_COMPANION
-  // TODO
   // no warn, accessed from instance
-  private val HI_INSTANCE: Int = 500 // assert: Unused
+  private val HI_INSTANCE: Int = 500
   private val HEY_INSTANCE: Int = 1000 // assert: Unused
   private lazy val BOOL: Boolean = true // assert: Unused
 }
