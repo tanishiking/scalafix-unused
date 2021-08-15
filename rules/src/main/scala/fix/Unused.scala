@@ -190,7 +190,9 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
 
             importee match {
               case wildcard: Importee.Wildcard =>
-                registerUnusedPkg(tree.ref, scope)
+                // Limitation: don't warn wildcard import other than from package
+                if (tree.ref.symbol.isPackage)
+                  registerUnusedPkg(tree.ref, scope)
               case other =>
                 if (other.symbol.isPackage)
                   registerUnusedPkg(other, scope)

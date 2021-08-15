@@ -3,7 +3,7 @@ rule = Unused
 */
 package fix.fromscala2.`warn-unused-imports1`
 
-import scala.collection.mutable // assert: Unused
+import scala.collection.mutable._ // assert: Unused
 
 // scalac: -Werror -Wunused:imports
 //
@@ -19,6 +19,13 @@ package object p1 {
   type D = String
 }
 package object p2 {
+  class A
+  implicit class B(val s: String) { def bippy = s }
+  val c: Bippo = new Bippo
+  type D = Int
+}
+
+object p3 {
   class A
   implicit class B(val s: String) { def bippy = s }
   val c: Bippo = new Bippo
@@ -42,15 +49,14 @@ trait NoWarn {
   }
 
   {
-    // TODO: c._ shouldn't be asserted
     import p1._ // no warn
-    import c._  // assert: Unused
+    import c._
     println(length)
   }
 
   {
     import p1._ // no warn
-    import c._  // assert: Unused
+    import c._
     val x: Tree = null
     println(x)
   }
@@ -80,7 +86,7 @@ trait Warn {
 
   {
     import p1._ // no warn (technically this could warn, but not worth the effort to unroll unusedness transitively)
-    import c._ // assert: Unused
+    import c._
     println(123)
   }
 
@@ -90,26 +96,32 @@ trait Warn {
     import p1._
     println(123)
   }
+  */
 
   {
     class Tree
     import p1._ // no warn
-    import c._ // assert: Unused
+    import c._
     val x: Tree = null
     println(x)
   }
 
   {
-    import p1.c._ // assert: Unused
+    import p1.c._
     println(123)
   }
-  */
+
+  {
+    import p3._
+    println("abc".bippy)
+    import c._
+    println(length)
+  }
 }
 
 trait Nested {
-  /*
   {
-    import p1._ // assert: Unused
+    import p1._
     trait Warn { // assert: Unused
       import p2._
       println(new A)
@@ -117,7 +129,6 @@ trait Nested {
     }
     println("")
   }
-  */
 
   {
     import p1._   // no warn
@@ -139,13 +150,12 @@ trait Nested {
   }
 }
 
-/*
 // test unusage of imports from other compilation units after implicit search
 trait Outsiders {
   {
     //implicit search should not disable warning
     import Sample._
-    import Sample.Implicits._ // assert: Unused
+    import Sample.Implicits._ // limitation, can't warn
     // f(42)                       // error
   }
   {
@@ -170,4 +180,3 @@ trait Outsiders {
   }
 }
 
-*/
