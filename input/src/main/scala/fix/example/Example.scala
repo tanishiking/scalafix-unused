@@ -1,6 +1,6 @@
 /*
 rule = Unused
-*/
+ */
 package fix.example
 
 import scala.concurrent.Future // assert: Unused

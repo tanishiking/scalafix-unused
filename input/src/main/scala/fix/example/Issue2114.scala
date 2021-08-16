@@ -1,6 +1,6 @@
 /*
 rule = Unused
-*/
+ */
 package fix.example
 
 // See https://github.com/scalameta/scalameta/issues/2114

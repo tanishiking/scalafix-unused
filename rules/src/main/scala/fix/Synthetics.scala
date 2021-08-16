@@ -2,9 +2,8 @@ package fix
 
 import scalafix.v1._
 
-/**
- * Utilities to work with SemanticDB synthetics.
- */
+/** Utilities to work with SemanticDB synthetics.
+  */
 object Synthetics {
   sealed abstract class ForeachResult {
     def isStop: Boolean = this == Stop
@@ -32,7 +31,7 @@ object Synthetics {
         case MacroExpansionTree(_, _) =>
           false
         case OriginalTree(_) => false
-        case _ => false
+        case _               => false
       }
     if (isStop(tree)) Stop
     else Continue

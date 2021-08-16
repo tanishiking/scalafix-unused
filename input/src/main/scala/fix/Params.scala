@@ -5,7 +5,7 @@ Unused.locals = false
 Unused.imports = false
 Unused.privates = false
 Unused.patvars = false
-*/
+ */
 package fix
 
 object Params {
@@ -13,11 +13,11 @@ object Params {
     def complete(isSuccess: Boolean): Unit = () /* assert: Unused
                  ^^^^^^^^^^^^^^^^^^
 Unused parameter 'isSuccess'
-    */
+     */
     def f2(param: Boolean): Boolean = { /* assert: Unused
            ^^^^^^^^^^^^^^
 Unused parameter 'param'
-      */
+     */
       val unused = true
       unused
     }

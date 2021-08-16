@@ -1,6 +1,6 @@
 /*
 rule = Unused
-*/
+ */
 package fix.fromscala2
 package patvars
 
@@ -48,7 +48,7 @@ trait Forever {
     val t = Option((17, 42))
     for {
       ns <- t
-      (i, j) = ns                        // no warn
+      (i, j) = ns // no warn
     } yield (i + j)
   }
   def g = {

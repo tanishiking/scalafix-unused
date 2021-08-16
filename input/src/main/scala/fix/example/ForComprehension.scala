@@ -1,7 +1,6 @@
-
 /*
 rule = Unused
-*/
+ */
 package fix.example
 
 class ForComprehension {
@@ -51,7 +50,7 @@ class ForComprehension {
       b,
       c,
       d,
-      e,
+      e
     )
   }
 }

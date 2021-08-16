@@ -1,6 +1,6 @@
 /*
 rule = Unused
-*/
+ */
 package fix
 
 // TODO: support scala3

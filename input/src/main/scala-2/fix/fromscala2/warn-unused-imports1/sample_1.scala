@@ -1,7 +1,7 @@
 /*
 rule = Unused
 Unused.params = false
-*/
+ */
 package fix.fromscala2.`warn-unused-imports1`
 
 // import scala.language._

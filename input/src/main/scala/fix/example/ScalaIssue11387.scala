@@ -1,6 +1,6 @@
 /*
 rule = Unused
-*/
+ */
 package fix.example
 
 // see: https://github.com/scala/bug/issues/11387

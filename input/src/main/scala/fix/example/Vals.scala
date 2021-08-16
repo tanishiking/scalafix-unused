@@ -1,6 +1,6 @@
 /*
 rule = Unused
-*/
+ */
 package fix.example
 
 abstract class Vals(p: Int, val xp: Int, var yp: Int) {

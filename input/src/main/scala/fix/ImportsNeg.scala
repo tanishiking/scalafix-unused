@@ -5,7 +5,7 @@ Unused.locals = false
 Unused.imports = true
 Unused.privates = false
 Unused.patvars = false
-*/
+ */
 package fix
 
 import collection.mutable._
@@ -19,7 +19,7 @@ object ImportsNeg {
 
   val nonfatal = util.control.NonFatal(new Exception("test"))
 
-  val immutableHashset = HashSet[Int]() 
+  val immutableHashset = HashSet[Int]()
   val immutableHashmap = HM[Int, Int]()
 
   val bigint = BigInt(1)

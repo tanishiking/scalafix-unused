@@ -1,6 +1,6 @@
 /*
 rule = Unused
-*/
+ */
 package fix.example
 
 // See https://github.com/scalameta/scalameta/issues/2116
@@ -12,7 +12,8 @@ abstract class Issue2116 {
 
   def check(
       includeDocs: Boolean = false, // assert: Unused
-      includeCommitCharacter: Boolean = false // unreported because there's named argument
+      includeCommitCharacter: Boolean =
+        false // unreported because there's named argument
   )(implicit loc: ExecutionContext): Unit = {} // assert: Unused
 }
 

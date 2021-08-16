@@ -1,19 +1,19 @@
 /*
 rule = Unused
-*/
+ */
 package fix.example
 package privates
 
 class Bippy(a: Int, b: Int) {
   // TODO: assert unused??
   private def this(c: Int) = this(c, c)
-  private def bippy(x: Int): Int      = bippy(x) // assert: Unused
-  private def boop(x: Int)            = x+a+b // assert: Unused
+  private def bippy(x: Int): Int = bippy(x) // assert: Unused
+  private def boop(x: Int) = x + a + b // assert: Unused
 
   // TODO
   // no warn, might have been inlined
-  final private val MILLIS1           = 2000 // assert: Unused
-  final private val MILLIS2: Int      = 1000 // assert: Unused
+  final private val MILLIS1 = 2000 // assert: Unused
+  final private val MILLIS2: Int = 1000 // assert: Unused
   final private val HI_COMPANION: Int = 500 // no warn, accessed from companion
   def hi() = Bippy.HI_INSTANCE
 }
@@ -56,7 +56,7 @@ trait DefaultArgs {
 /* scala/bug#7707 Both usages warn default arg because using PrivateRyan.apply, not new.
 case class PrivateRyan private (ryan: Int = 42) { def f = PrivateRyan() }
 object PrivateRyan { def f = PrivateRyan() }
-*/
+ */
 
 class Outer {
   class Inner
@@ -108,7 +108,7 @@ trait Underwarn {
   def f(): Seq[Int]
 
   def g() = {
-    val Seq(_, _) = f()  // no warn
+    val Seq(_, _) = f() // no warn
     true
   }
 }
@@ -167,7 +167,7 @@ trait Forever {
     for {
       ns <- t
       (i, j) = ns // assert: Unused
-    } yield 42                           // val emitted only if needed, hence nothing unused
+    } yield 42 // val emitted only if needed, hence nothing unused
   }
 }
 
@@ -177,17 +177,17 @@ trait Ignorance {
 
 trait CaseyKasem {
   def f = 42 match {
-    case x if x < 25 => "no warn"
+    case x if x < 25            => "no warn"
     case y if toString.nonEmpty => "no warn" + y
-    case z => "warn" // assert: Unused
+    case z                      => "warn" // assert: Unused
   }
 }
 trait CaseyAtTheBat {
   def f = Option(42) match {
-    case Some(x) if x < 25 => "no warn"
+    case Some(x) if x < 25                => "no warn"
     case Some(y @ _) if toString.nonEmpty => "no warn" // assert: Unused
-    case Some(z) => "warn" // assert: Unused
-    case None => "no warn"
+    case Some(z)                          => "warn" // assert: Unused
+    case None                             => "no warn"
   }
 }
 
@@ -201,8 +201,8 @@ object `not even using companion privates` {
 
 class `no warn in patmat anonfun isDefinedAt` {
   def f(pf: PartialFunction[String, Int]) = pf("42")
-  def g = f {
-    case s => s.length        // no warn (used to warn case s => true in isDefinedAt)
+  def g = f { case s =>
+    s.length // no warn (used to warn case s => true in isDefinedAt)
   }
 }
 
@@ -213,8 +213,7 @@ class `nonprivate alias is enclosing` {
   private class D extends C2 // assert: Unused
 }
 
-object `classof something` {
-}
+object `classof something` {}
 
 trait `short comings` {
   def f: Int = {

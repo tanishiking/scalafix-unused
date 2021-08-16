@@ -14,7 +14,7 @@ def crossSetting[A](
   CrossVersion.partialVersion(scalaVersion) match {
     case partialVersion if isScala2(partialVersion) => if2
     case partialVersion if isScala3(partialVersion) => if3
-    case _ => Nil
+    case _                                          => Nil
   }
 
 val inputSettings = List(
@@ -25,9 +25,8 @@ val inputSettings = List(
     ),
     if3 = List(
     )
-  ),
+  )
 )
-
 
 inThisBuild(
   List(
@@ -118,14 +117,14 @@ lazy val tests = projectMatrix
     scalaVersions = Seq(V.scala213),
     axisValues = Seq(TargetAxis(V.scala213), VirtualAxis.jvm),
     settings = Seq(
-      scalacOptions += "-P:semanticdb:synthetics:on",
+      scalacOptions += "-P:semanticdb:synthetics:on"
     )
   )
   .customRow(
     scalaVersions = Seq(V.scala212),
     axisValues = Seq(TargetAxis(V.scala212), VirtualAxis.jvm),
     settings = Seq(
-      scalacOptions += "-P:semanticdb:synthetics:on",
+      scalacOptions += "-P:semanticdb:synthetics:on"
     )
   )
   .dependsOn(rules)

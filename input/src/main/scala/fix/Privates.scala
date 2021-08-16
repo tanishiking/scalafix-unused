@@ -5,7 +5,7 @@ Unused.locals = false
 Unused.imports = false
 Unused.privates = true
 Unused.patvars = false
-*/
+ */
 
 package fix
 
@@ -15,24 +15,24 @@ object PrivatesPositive {
     private def foo(x: Int) = ??? /* assert: Unused
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Unused private field 'foo'
-    */
+     */
 
     private object Foo { /* assert: Unused
     ^
 Unused private field 'Foo'
-      */
+     */
       def x = 1
     }
 
     private type A = Int /* assert: Unused
     ^^^^^^^^^^^^^^^^^^^^
 Unused private field 'A'
-    */
+     */
 
     private val field = 1 /* assert: Unused
     ^^^^^^^^^^^^^^^^^^^^^
 Unused private field 'field'
-    */
+     */
   }
 
   trait PrivatesTrait {
@@ -53,7 +53,6 @@ Unused private field 'field'
     private val field = 1 // assert: Unused
   }
 }
-
 
 object PrivateNegative {
   case class Foo(x: Int, y: Int)

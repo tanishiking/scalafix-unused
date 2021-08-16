@@ -5,7 +5,7 @@ Unused.locals = false
 Unused.imports = false
 Unused.privates = false
 Unused.patvars = false
-*/
+ */
 package fix
 
 object ParamsScala2 {

@@ -1,6 +1,6 @@
 /*
 rule = Unused
-*/
+ */
 package fix.fromscala2.`warn-unused-imports1`
 
 import scala.collection.mutable._ // assert: Unused
@@ -75,12 +75,12 @@ trait Warn {
   }
 
   {
-    import p1.{ A, B } // assert: Unused
+    import p1.{A, B} // assert: Unused
     println("abc".bippy)
   }
 
   {
-    import p1.{ A, B } // assert: Unused
+    import p1.{A, B} // assert: Unused
     println(123)
   }
 
@@ -96,7 +96,7 @@ trait Warn {
     import p1._
     println(123)
   }
-  */
+   */
 
   {
     class Tree
@@ -131,13 +131,13 @@ trait Nested {
   }
 
   {
-    import p1._   // no warn
+    import p1._ // no warn
     trait NoWarn {
-      import p2.B  // no warn
+      import p2.B // no warn
       println("abc".bippy)
       println(new A)
     }
-    println(new NoWarn { })
+    println(new NoWarn {})
   }
 
   {
@@ -146,7 +146,7 @@ trait Nested {
       import p2.A
       println(new A)
     }
-    println(new Warn { })
+    println(new Warn {})
   }
 }
 
@@ -160,23 +160,22 @@ trait Outsiders {
   }
   {
     import Sample._
-    import Sample.Implicits._   // nowarn
-    g(42)                       // ok
+    import Sample.Implicits._ // nowarn
+    g(42) // ok
   }
   {
     import Sample._
-    import Sample.Implicits.`int to Y`  // nowarn
+    import Sample.Implicits.`int to Y` // nowarn
     import Sample.Implicits.useless // assert: Unused
-    g(42)                       // ok
+    g(42) // ok
   }
   {
     import java.io.File // assert: Unused
     import scala.concurrent.Future // assert: Unused
     import scala.concurrent.ExecutionContext.Implicits.global // assert: Unused
     import p1.A // assert: Unused
-    import p1.B                         // no warn
+    import p1.B // no warn
     println("abc".bippy)
     //Future("abc".bippy)
   }
 }
-

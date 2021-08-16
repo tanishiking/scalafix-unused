@@ -1,11 +1,10 @@
 /*
 rule = Unused
-*/
+ */
 
 package fix.fromscala2
 package privates
 package scala2
-
 
 class StableAccessors {
   private var s1: Int = 0 // assert: Unused
@@ -26,4 +25,3 @@ object `classof something` {
   private class intrinsically
   def f = classOf[intrinsically].toString()
 }
-

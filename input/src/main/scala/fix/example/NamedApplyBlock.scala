@@ -1,8 +1,7 @@
 /*
 rule = Unused
-*/
+ */
 package fix.example
-
 
 object NamedApplyBlockMethods {
   val local = 1

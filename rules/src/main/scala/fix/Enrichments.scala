@@ -23,13 +23,13 @@ object Enrichments {
     def overlaps(other: Position): Boolean =
       range match {
         case Some(range) => range.overlaps(other)
-        case None => true
+        case None        => true
       }
 
     def overlaps(other: Option[Position]): Boolean =
       other match {
         case Some(other) => overlaps(other)
-        case None => true
+        case None        => true
       }
   }
 

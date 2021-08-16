@@ -1,6 +1,6 @@
 /*
 rule = Unused
-*/
+ */
 package fix.example
 package advanced
 
@@ -18,7 +18,7 @@ class Structural {
   def s3 = new { def m(x: Int): Int = ??? } /* assert: Unused
                        ^^^^^^
 Unused parameter 'x'
-*/
+   */
   def s4 = new { def m(x: Int): Int = x }
 }
 

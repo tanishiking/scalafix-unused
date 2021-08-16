@@ -1,6 +1,6 @@
 /*
 rule = Unused
-*/
+ */
 package fix.fromscala2
 package locals
 

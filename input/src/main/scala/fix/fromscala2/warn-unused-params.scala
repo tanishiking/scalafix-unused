@@ -1,6 +1,6 @@
 /*
 rule = Unused
-*/
+ */
 package fix.fromscala2
 package params
 
@@ -8,38 +8,45 @@ package params
 //
 
 trait InterFace {
+
   /** Call something. */
   def call(a: Int, b: String, c: Double): Int
 }
 
 trait BadAPI extends InterFace {
-  def f(a: Int,
-        b: String, // assert: Unused
-        c: Double): Int = {
+  def f(
+      a: Int,
+      b: String, // assert: Unused
+      c: Double
+  ): Int = {
     println(c)
     a
   }
   // TODO: don't warn deprecated metdho
-  @deprecated ("no warn in deprecated API", since="yesterday")
-  def g(a: Int,
-        b: String, // assert: Unused
-        c: Double): Int = {
+  @deprecated("no warn in deprecated API", since = "yesterday")
+  def g(
+      a: Int,
+      b: String, // assert: Unused
+      c: Double
+  ): Int = {
     println(c)
     a
   }
 
   // TODO
   // no warn, required by superclass
-  override def call(a: Int,
-                    b: String, // assert: Unused
-                    c: Double): Int = {
+  override def call(
+      a: Int,
+      b: String, // assert: Unused
+      c: Double
+  ): Int = {
     println(c)
     a
   }
 
   def meth(x: Int) = x
 
-  override def equals(other: Any): Boolean = true  // assert: Unused
+  override def equals(other: Any): Boolean = true // assert: Unused
 
   def i(implicit s: String) = 42 // assert: Unused
 
@@ -49,7 +56,7 @@ trait BadAPI extends InterFace {
     val x = y               // maybe option to warn only if shadowed
     x
   }
-  */
+   */
 }
 
 // mustn't alter warnings in super
@@ -63,19 +70,19 @@ class Unusing(u: Int) {
   def f = ???
 }
 
-class Valuing(val u: Int)        // no warn
+class Valuing(val u: Int) // no warn
 
 class Revaluing(u: Int) { def f = u } // no warn
 
-case class CaseyKasem(k: Int)        // no warn
+case class CaseyKasem(k: Int) // no warn
 
-case class CaseyAtTheBat(k: Int)(s: String)        // warn
+case class CaseyAtTheBat(k: Int)(s: String) // warn
 
 trait Ignorance {
   def f(readResolve: Int) = 42 // assert: Unused
 }
 
-class Reusing(u: Int) extends Unusing(u)   // no warn
+class Reusing(u: Int) extends Unusing(u) // no warn
 
 class Main {
   // TODO
@@ -100,9 +107,10 @@ trait Proofs {
 trait Anonymous {
   def f = (i: Int) => 42 // assert: Unused
 
-  def f1 = (_: Int) => 42     // no warn underscore parameter (a fresh name)
+  def f1 = (_: Int) => 42 // no warn underscore parameter (a fresh name)
 
-  def f2: Int => Int = _ + 1  // no warn placeholder syntax (a fresh name and synthetic parameter)
+  def f2: Int => Int =
+    _ + 1 // no warn placeholder syntax (a fresh name and synthetic parameter)
 
   def g = for (i <- List(1)) yield 42 // assert: Unused
 }

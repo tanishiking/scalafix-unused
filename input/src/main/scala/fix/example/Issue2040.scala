@@ -1,6 +1,6 @@
 /*
 rule = Unused
-*/
+ */
 package fix.example
 
 // See https://github.com/scalameta/scalameta/issues/2040
@@ -28,8 +28,8 @@ object Issue2040 {
   }
 
   trait BarSpec extends Base {
-    implicit def convertToAnyShouldWrapper(o: Any)(
-        implicit prettifier: Prettifier
+    implicit def convertToAnyShouldWrapper(o: Any)(implicit
+        prettifier: Prettifier
     ): AnyShouldWrapper
 
     i() shouldBe 1

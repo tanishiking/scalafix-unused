@@ -1,6 +1,6 @@
 /*
 rule = Unused
-*/
+ */
 package fix.example
 class MethodUsages {
   val m = new Methods[Int]
