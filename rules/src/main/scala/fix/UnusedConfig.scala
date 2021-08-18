@@ -5,7 +5,7 @@ case class UnusedConfig(
     locals: Boolean = true,
     imports: Boolean = true,
     privates: Boolean = true,
-    patvars: Boolean = true,
+    patvars: Boolean = true
 )
 
 object UnusedConfig {
