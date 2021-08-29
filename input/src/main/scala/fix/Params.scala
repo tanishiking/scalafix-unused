@@ -43,4 +43,9 @@ Parameter value 'param' in method 'f2' is never used
       } yield x1 + y1
     }
   }
+  object HelloWorld {
+    def main(args: Array[String]): Unit = { // no warn disabled
+      println("Hello, world!")
+    }
+  }
 }

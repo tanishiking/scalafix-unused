@@ -78,8 +78,7 @@ trait Ignorance {
 class Reusing(u: Int) extends Unusing(u)   // no warn
 
 class Main {
-  // TODO
-  def main(args: Array[String]): Unit = println("hello, args") // assert: Unused
+  def main(args: Array[String]): Unit = println("hello, args") // no warn
 }
 
 trait Unimplementation {

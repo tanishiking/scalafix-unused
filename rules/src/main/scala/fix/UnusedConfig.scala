@@ -5,7 +5,14 @@ case class UnusedConfig(
     locals: Boolean = true,
     imports: Boolean = true,
     privates: Boolean = true,
-    patvars: Boolean = true
+    patvars: Boolean = true,
+    disabledImports: List[String] = List(
+      "scala.language"
+    ),
+    /** disable unused params check for the listed methods */
+    disabledParamsOfMethods: List[String] = List(
+      "main"
+    )
 )
 
 object UnusedConfig {

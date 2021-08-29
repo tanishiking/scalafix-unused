@@ -3,6 +3,10 @@ rule = Unused
 Unused.params = false
 Unused.locals = false
 Unused.imports = true
+Unused.disabledImports = [
+  "scala.language",
+  "scala.compat"
+]
 Unused.privates = false
 Unused.patvars = false
 */
@@ -38,6 +42,10 @@ import scala.concurrent._ /* assert: Unused
        ^^^^^^^^^^^^^^^^^^
 Unused import 'concurrent'
 */
+
+import scala.compat.Platform // disabled
+import scala.language.higherKinds // disabled
+import scala.language._
 
 object Imports {
   val m = max(1, 2)

@@ -128,11 +128,14 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
             registerUnused(UnusedParam(param.symbol, param, tree.symbol, param.pos))
         }
       case tree: Defn.Def if config.params =>
-        for {
-          params <- tree.paramss
-          param <- params
-        } yield {
-          registerUnused(UnusedParam(param.symbol, param, tree.symbol, param.pos))
+        val methodName = tree.symbol.getDisplayName
+        if (!config.disabledParamsOfMethods.exists(_ == methodName)) {
+          for {
+            params <- tree.paramss
+            param <- params
+          } yield {
+            registerUnused(UnusedParam(param.symbol, param, tree.symbol, param.pos))
+          }
         }
 
       case tree: Defn if tree.symbol.isLocal && config.locals =>
@@ -187,6 +190,12 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
         registerUnused(UnusedPatVar(tree.symbol, tree.pos))
 
       case tree: Importer if config.imports =>
+        def isDisabled(sym: Symbol): Boolean = {
+          val normalized = sym.normalized.value
+          config.disabledImports.exists(disable =>
+            normalized.startsWith(disable)
+          )
+        }
         val isExport = tree.parent.map(_.is[Export]).getOrElse(false)
         if (!isExport) {
           tree.importees.foreach { importee =>
@@ -202,16 +211,14 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
             importee match {
               case wildcard: Importee.Wildcard =>
                 // Limitation: don't warn wildcard import other than from package
-                if (tree.ref.symbol.isPackage)
+                if (!isDisabled(tree.ref.symbol) && tree.ref.symbol.isPackage)
                   registerUnusedPkg(
                     UnusedImport(tree.ref.symbol, tree.pos, scope))
-              case other =>
+              case other if !isDisabled(other.symbol) =>
                 if (other.symbol.isPackage)
                   registerUnusedPkg(
                     UnusedImport(other.symbol, other.pos, scope))
-                else if (
-                  !other.symbol.normalized.value.startsWith("scala.language.")
-                )
+                else
                   registerUnusedImport(
                     UnusedImport(
                       other.symbol,
@@ -219,6 +226,7 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
                       scope,
                     )
                   )
+              case _ =>
             }
           }
         }
