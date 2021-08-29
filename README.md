@@ -1,4 +1,7 @@
 # scalafix-unused
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ec81c689ca784994bdda93a8134be2a9)](https://app.codacy.com/gh/tanishiking/scalafix-unused?utm_source=github.com&utm_medium=referral&utm_content=tanishiking/scalafix-unused&utm_campaign=Badge_Grade_Settings)
+
 ![CI](https://github.com/tanishiking/scalafix-unused/actions/workflows/ci.yml/badge.svg)
 
 ## Configuration
