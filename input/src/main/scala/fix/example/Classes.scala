@@ -38,13 +38,13 @@ object N {
 
 object Chain {
   class A {
-    def tst1(i: Int): A = this
-    def tst2(i: Int): A = this
-    def tst3(i: Int, j: Int): A = this
-    def tst4(i: Int, j: A): A = j
+    def tst1(i: Int): A = this // assert: Unused
+    def tst2(i: Int): A = this // assert: Unused
+    def tst3(i: Int, j: Int): A = this // assert: Unused
+    def tst4(i: Int, j: A): A = j // assert: Unused
   }
 
-  def tst(i: Int, j: A = new A()) = j
+  def tst(i: Int, j: A = new A()) = j // assert: Unused
 
   val a = new A
   a.tst1(i = 1)

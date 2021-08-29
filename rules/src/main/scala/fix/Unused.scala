@@ -125,7 +125,7 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
       case tree: Term.Function if config.params =>
         tree.params.foreach { param =>
           if (param.name.value.nonEmpty) // (_: Int) => 42 has name ''
-            registerUnused(UnusedParam(param.symbol, param, tree.symbol, param.pos))
+            registerUnused(UnusedParam(param.symbol, param, tree.symbol, param.pos, tree.pos.asRange))
         }
       case tree: Defn.Def if config.params =>
         val methodName = tree.symbol.getDisplayName
@@ -134,7 +134,7 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
             params <- tree.paramss
             param <- params
           } yield {
-            registerUnused(UnusedParam(param.symbol, param, tree.symbol, param.pos))
+            registerUnused(UnusedParam(param.symbol, param, tree.symbol, param.pos, tree.pos.asRange))
           }
         }
 
@@ -241,12 +241,14 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
 
     occurrences.foreach { occurrence =>
       val sym = occurrence.sym
-      unusedSyms.get(sym) match {
+      unusedSyms.get(sym).foreach { defn =>
         // if defn.pos.contains(tree.pos) = true
         // that means the tree is a definition itself, and do not mark it as used
-        case Some(defn) if !defn.pos.overlaps(occurrence.pos) =>
-          unusedSyms.remove(sym)
-        case _ => ()
+        if (
+          !defn.pos.overlaps(occurrence.pos) &&
+          defn.scope.map(_.overlaps(occurrence.pos)).getOrElse(true) // true if scope is None
+        )
+        unusedSyms.remove(sym)
       }
 
       val normalized = sym.ensureNormalized

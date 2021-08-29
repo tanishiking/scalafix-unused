@@ -17,6 +17,12 @@ object Enrichments {
         case Some(other) => overlaps(other)
         case None        => false
       }
+
+    def asRange: Option[Position.Range] = pos match {
+      case range: Position.Range => Some(range)
+      case _ => None
+    }
+
   }
 
   implicit class RichRange(range: Option[Position.Range]) extends AnyRef {

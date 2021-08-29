@@ -12,7 +12,7 @@ abstract class Issue2116 {
 
   def check(
       includeDocs: Boolean = false, // assert: Unused
-      includeCommitCharacter: Boolean = false // unreported because there's named argument
+      includeCommitCharacter: Boolean = false // assert: Unused
   )(implicit loc: ExecutionContext): Unit = {} // assert: Unused
 }
 

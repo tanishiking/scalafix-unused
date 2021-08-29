@@ -8,6 +8,7 @@ import Enrichments.RichSymbol
 sealed abstract class UnusedSymbol {
   val sym: Symbol
   val pos: Position
+  val scope: Option[Position.Range] = None
   def toDiagnostic(implicit doc: Symtab): Diagnostic
 }
 case class UnusedLocal(sym: Symbol, pos: Position) extends UnusedSymbol {
@@ -18,7 +19,13 @@ case class UnusedLocal(sym: Symbol, pos: Position) extends UnusedSymbol {
     )
   }
 }
-case class UnusedParam(sym: Symbol, paramTree: Tree, owner: Symbol, pos: Position) extends UnusedSymbol {
+case class UnusedParam(
+  sym: Symbol,
+  paramTree: Tree,
+  owner: Symbol,
+  pos: Position,
+  override val scope: Option[Position.Range]
+) extends UnusedSymbol {
   override def toDiagnostic(implicit doc: Symtab): Diagnostic = {
     val name = sym.getDisplayName
     // TODO: should be tested by symbol.info.map(_.isGiven)
