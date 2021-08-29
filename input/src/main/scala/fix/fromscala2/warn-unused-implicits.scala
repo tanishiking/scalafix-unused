@@ -30,7 +30,7 @@ trait BadAPI extends InterFace {
   override def call(a: Int,
                     b: String,
                     c: Double
-                   )(implicit s: String): Int = { // assert: Unused
+                   )(implicit s: String): Int = {
     println(b + c)
     a
   }

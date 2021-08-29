@@ -31,7 +31,7 @@ trait BadAPI extends InterFace {
   // TODO
   // no warn, required by superclass
   override def call(a: Int,
-                    b: String, // assert: Unused
+                    b: String,
                     c: Double): Int = {
     println(c)
     a
@@ -39,7 +39,7 @@ trait BadAPI extends InterFace {
 
   def meth(x: Int) = x
 
-  override def equals(other: Any): Boolean = true  // assert: Unused
+  override def equals(other: Any): Boolean = true
 
   def i(implicit s: String) = 42 // assert: Unused
 
@@ -54,7 +54,7 @@ trait BadAPI extends InterFace {
 
 // mustn't alter warnings in super
 trait PoorClient extends BadAPI {
-  override def meth(x: Int) = ??? // assert: Unused
+  override def meth(x: Int) = ???
   override def f(a: Int, b: String, c: Double): Int = a + b.toInt + c.toInt
 }
 

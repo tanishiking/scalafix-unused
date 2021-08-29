@@ -17,6 +17,7 @@ case class SymbolOccurrence(
 class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
   import Symbols._
   import Enrichments._
+  import scalafix.ScalafixAccess._
 
   def this() = this(UnusedConfig.default)
 
@@ -129,7 +130,8 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
         }
       case tree: Defn.Def if config.params =>
         val methodName = tree.symbol.getDisplayName
-        if (!config.disabledParamsOfMethods.exists(_ == methodName)) {
+        val isOverride = tree.symbol.isOverride || tree.mods.exists(mod => mod.is[Mod.Override])
+        if (!config.disabledParamsOfMethods.exists(_ == methodName) && !isOverride) {
           for {
             params <- tree.paramss
             param <- params
