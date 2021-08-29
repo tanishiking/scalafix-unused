@@ -17,7 +17,7 @@ class Structural {
   def s2 = new { val x: Int = ??? }
   def s3 = new { def m(x: Int): Int = ??? } /* assert: Unused
                        ^^^^^^
-Unused parameter 'x'
+Parameter value 'x' in method 'm' is never used
 */
   def s4 = new { def m(x: Int): Int = x }
 }

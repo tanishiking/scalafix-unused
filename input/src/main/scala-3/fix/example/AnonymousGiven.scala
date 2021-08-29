@@ -8,5 +8,5 @@ trait Foo
 
 def bar(using Foo) = 42 /* assert: Unused
               ^^^
-Unused parameter ''
+Parameter value '' in method 'bar' is never used
 */

@@ -17,7 +17,7 @@ object Pos:
   def locals1() =
     val x = 1 /* assert: Unused
     ^^^^^^^^^
-  Unused definition 'x'
+Local definition 'x' is never used
     */
     println(1)
   
@@ -29,14 +29,14 @@ object Pos:
   def localsAnonymousGiven() =
     given Int = 1 /* aasert: Unused
     ^^^^^^^^^^^^^^^^
-Unused definition ''
+Local definition 'Int' is never used
   */
     println(1)
   
   def localEnum =
     enum Foo: /* assert: Unused
     ^
-Unused definition 'Foo'
+Local definition 'Foo' is never used
   */
       case A, B
   
@@ -44,7 +44,7 @@ Unused definition 'Foo'
     given intOrd: Ord[Int] with
       def compare(x: Int, y: Int) = /* assert: Unused
       ^
-Unused definition 'compare'
+Local definition 'compare' is never used
       */
         if x < y then -1 else if x > y then +1 else 0
     println(1)
@@ -53,7 +53,7 @@ Unused definition 'compare'
     extension (x: Int)
       def incl = x + 1 /* assert: Unused
       ^^^^^^^^^^^^^^^^
-Unused definition 'incl'
+Local definition 'incl' is never used
       */
     println(1)
 end Pos 

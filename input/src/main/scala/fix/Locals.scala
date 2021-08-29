@@ -13,21 +13,21 @@ object Locals {
     def complete(isSuccess: Boolean): Unit = {
       val x = 1 /* assert: Unused
       ^^^^^^^^^
-Unused definition 'x'
+Local definition 'x' is never used
       */
-    }
+  }
 
     def variable: Unit = {
       var x = 1 /* assert: Unused
       ^^^^^^^^^
-Unused definition 'x'
+Local definition 'x' is never used
       */
     }
 
     def implicit1(): Unit = {
       implicit val x = 1 /* assert: Unused
       ^^^^^^^^^^^^^^^^^^
-Unused definition 'x'
+Local definition 'x' is never used
       */
     }
   }

@@ -12,11 +12,11 @@ object Params {
   object Pos {
     def complete(isSuccess: Boolean): Unit = () /* assert: Unused
                  ^^^^^^^^^^^^^^^^^^
-Unused parameter 'isSuccess'
+Parameter value 'isSuccess' in method 'complete' is never used
     */
     def f2(param: Boolean): Boolean = { /* assert: Unused
            ^^^^^^^^^^^^^^
-Unused parameter 'param'
+Parameter value 'param' in method 'f2' is never used
       */
       val unused = true
       unused

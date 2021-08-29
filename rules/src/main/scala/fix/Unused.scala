@@ -6,13 +6,8 @@ import collection.{mutable => m}
 
 import metaconfig.Configured
 import scala.annotation.unused
+import scala.tools.nsc.Reporting
 
-case class UnusedSymbol(
-    pos: Position,
-    sym: Symbol,
-    kind: Kind,
-    scope: Option[Position.Range] = None
-)
 
 case class SymbolOccurrence(
     sym: Symbol,
@@ -32,12 +27,12 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
   override def fix(implicit doc: SemanticDocument): Patch = {
     val unusedSyms = m.HashMap[Symbol, UnusedSymbol]()
 
-    val unusedPkgs = new m.HashMap[Symbol, m.Set[UnusedSymbol]]
-      with m.MultiMap[Symbol, UnusedSymbol]
+    val unusedPkgs = new m.HashMap[Symbol, m.Set[UnusedImport]]
+      with m.MultiMap[Symbol, UnusedImport]
     // The key symbol should be normalized, and symbol in UnusedSymbol shouldn't be normalized
     val unusedImports =
-      new m.HashMap[NormalizedSymbol, m.Set[UnusedSymbol]]
-        with m.MultiMap[NormalizedSymbol, UnusedSymbol]
+      new m.HashMap[NormalizedSymbol, m.Set[UnusedImport]]
+        with m.MultiMap[NormalizedSymbol, UnusedImport]
 
     // Used for store the symbols that shouldn't be reported unused
     val visited = m.Set[Symbol]()
@@ -56,38 +51,45 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
     }
 
     def registerUnused(
-        tree: Tree,
-        kind: Kind,
-        scope: Option[Position.Range] = None
+        unused: UnusedSymbol,
     ): Unit = {
-      if (!visited.contains(tree.symbol)) {
-        val unused = UnusedSymbol(tree.pos, tree.symbol, kind, scope)
-        if (kind == Kind.Import) {
-          unusedImports.addBinding(unused.sym.ensureNormalized, unused)
-        } else {
-          unusedSyms(unused.sym) = unused
-        }
-      }
+      if (!visited.contains(unused.sym))
+        unusedSyms(unused.sym) = unused
     }
-    def registerUnusedPkg(tree: Tree, scope: Option[Position.Range]): Unit = {
-      val unused = UnusedSymbol(tree.pos, tree.symbol, Kind.ImportPkg, scope)
+    def registerUnusedImport(
+      unused: UnusedImport
+    ): Unit = {
+      unusedImports.addBinding(unused.sym.ensureNormalized, unused)
+    }
+    def registerUnusedPkg(unused: UnusedImport): Unit = {
       unusedPkgs.addBinding(unused.sym.normalized, unused)
     }
-    def registerPrivateFields(templ: Template): Unit = {
+
+    def traversePrivateFields(owner: Tree, templ: Template): Unit = {
+      owner match {
+        case cls: Defn.Class =>
+          cls.ctor.paramss.flatten.foreach { param =>
+            if (param.symbol.info.map(_.isPrivate).getOrElse(false))
+              registerUnused(UnusedPrivate(param.symbol, owner.symbol, param.pos))
+          }
+        case _ =>
+      }
       templ.stats.foreach { stat =>
         stat match {
           case defn: Defn if defn.isPrivateDef =>
-            registerUnused(defn, Kind.Private)
+            registerUnused(UnusedPrivate(defn.symbol, owner.symbol, defn.pos))
           case _ => ()
         }
       }
     }
-    def registerRefinements(refinements: List[Stat]): Unit = {
+    def traverseRefinements(owner: Tree, refinements: List[Stat]): Unit = {
       refinements.foreach { stat =>
         stat match {
           case defn: Defn =>
-            if (config.privates && defn.isPrivateDef)
-              registerUnused(defn, Kind.Private)
+            if (config.privates && defn.isPrivateDef) {
+              val unused = UnusedPrivate(defn.symbol, owner.symbol, defn.pos)
+              registerUnused(unused)
+            }
             visited += defn.symbol
           case decl: Decl =>
             visited += decl.symbol
@@ -98,7 +100,7 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
 
     def resolveUnusedImportPkg(sym: Symbol, pos: Option[Position]): Unit = {
       val normalized = sym.ensureNormalized
-      var longestPrefix: Option[(Symbol, UnusedSymbol)] = None
+      var longestPrefix: Option[(Symbol, UnusedImport)] = None
       unusedPkgs.foreach { case (pkg, unuseds) =>
         val pkgPrefix = pkg.normalized.value
         unuseds.find(unused =>
@@ -123,18 +125,18 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
       case tree: Term.Function if config.params =>
         tree.params.foreach { param =>
           if (param.name.value.nonEmpty) // (_: Int) => 42 has name ''
-            registerUnused(param, Kind.Param)
+            registerUnused(UnusedParam(param.symbol, tree.symbol, param.pos))
         }
       case tree: Defn.Def if config.params =>
         for {
           params <- tree.paramss
           param <- params
         } yield {
-          registerUnused(param, Kind.Param)
+          registerUnused(UnusedParam(param.symbol, tree.symbol, param.pos))
         }
 
       case tree: Defn if tree.symbol.isLocal && config.locals =>
-        registerUnused(tree, Kind.Local)
+        registerUnused(UnusedLocal(tree.symbol, tree.pos))
 
       // Register unused private fields
       // e.g.
@@ -148,20 +150,15 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
       // }
       // ```
       case tree: Defn.Object if config.privates =>
-        registerPrivateFields(tree.templ)
+        traversePrivateFields(tree, tree.templ)
       case tree: Defn.Trait if config.privates =>
-        registerPrivateFields(tree.templ)
+        traversePrivateFields(tree, tree.templ)
       case tree: Defn.Class if config.privates =>
-        registerPrivateFields(tree.templ)
-        tree.ctor.paramss.flatten.foreach { param =>
-          if (param.symbol.info.map(_.isPrivate).getOrElse(false))
-            registerUnused(param, Kind.Private)
-        }
-
+        traversePrivateFields(tree, tree.templ)
       case tree: Type.Refine =>
-        registerRefinements(tree.stats)
+        traverseRefinements(tree, tree.stats)
       case tree: Term.NewAnonymous =>
-        registerRefinements(tree.templ.stats)
+        traverseRefinements(tree, tree.templ.stats)
 
       // Register unused pattern value
       // e.g.
@@ -187,7 +184,7 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
       // ```
       // as unused pattern value
       case tree: Pat.Var if tree.symbol.isLocal && config.patvars =>
-        registerUnused(tree, Kind.Patvar)
+        registerUnused(UnusedPatVar(tree.symbol, tree.pos))
 
       case tree: Importer if config.imports =>
         val isExport = tree.parent.map(_.is[Export]).getOrElse(false)
@@ -206,14 +203,22 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
               case wildcard: Importee.Wildcard =>
                 // Limitation: don't warn wildcard import other than from package
                 if (tree.ref.symbol.isPackage)
-                  registerUnusedPkg(tree.ref, scope)
+                  registerUnusedPkg(
+                    UnusedImport(tree.ref.symbol, tree.pos, scope))
               case other =>
                 if (other.symbol.isPackage)
-                  registerUnusedPkg(other, scope)
+                  registerUnusedPkg(
+                    UnusedImport(other.symbol, other.pos, scope))
                 else if (
                   !other.symbol.normalized.value.startsWith("scala.language.")
                 )
-                  registerUnused(other, Kind.Import, scope)
+                  registerUnusedImport(
+                    UnusedImport(
+                      other.symbol,
+                      other.pos,
+                      scope,
+                    )
+                  )
             }
           }
         }
@@ -263,15 +268,15 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
     }
 
     val patches1 = unusedSyms.values.map { unused =>
-      Patch.lint(UnusedDiagnostic(unused))
+      Patch.lint(unused.toDiagnostic)
     }
 
     val patches2 = unusedImports.values.flatten.map { unused =>
-      Patch.lint(UnusedDiagnostic(unused))
+      Patch.lint(unused.toDiagnostic)
     }
 
     val patches3 = unusedPkgs.values.flatten.map { pkg =>
-      Patch.lint(UnusedDiagnostic(pkg))
+      Patch.lint(pkg.toDiagnostic)
     }
 
     (patches1 ++ patches2 ++ patches3).asPatch

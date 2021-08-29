@@ -21,22 +21,22 @@ object PatVarsPos {
   def pattern1(x: Sealed): Unit = x match {
     case A(x) => () /* assert: Unused
            ^
-Unused pattern value 'x'
+Pattern value 'x' is never used: use a wildcard '_'
 */
     case B(aaa, bbb) => println(aaa) /* assert: Unused
                 ^^^
-Unused pattern value 'bbb'
+Pattern value 'bbb' is never used: use a wildcard '_'
 */
     case c @ C(x, y) => println(x + y) /* assert: Unused
          ^
-Unused pattern value 'c'
+Pattern value 'c' is never used: use a wildcard '_'
 */
   }
 
   def patterns2 = {
     val (a, b, _) = (1, 2, 3) /* assert: Unused
             ^
-Unused pattern value 'b'
+Pattern value 'b' is never used: use a wildcard '_'
     */
     println(a)
   }

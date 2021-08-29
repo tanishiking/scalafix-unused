@@ -12,14 +12,14 @@ object ParamsScala3:
   object Pos:
     def pos1(param: Boolean): Boolean = /* assert: Unused
              ^^^^^^^^^^^^^^
-Unused parameter 'param'
+Parameter value 'param' in method 'pos1' is never used
     */
       val param = true
       param
 
     def pos2(x: Int)(using y: Int) = /* assert: Unused
                            ^^^^^^
-Unused parameter 'y'
+Parameter value 'y' in method 'pos2' is never used
       */
       x
   end Pos

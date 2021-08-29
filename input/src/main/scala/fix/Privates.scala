@@ -14,24 +14,24 @@ object PrivatesPositive {
   object PrivatesObj {
     private def foo(x: Int) = ??? /* assert: Unused
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Unused private field 'foo'
+Private definition 'foo' in 'PrivatesObj' is never used
     */
 
     private object Foo { /* assert: Unused
     ^
-Unused private field 'Foo'
+Private definition 'Foo' in 'PrivatesObj' is never used
       */
       def x = 1
     }
 
     private type A = Int /* assert: Unused
     ^^^^^^^^^^^^^^^^^^^^
-Unused private field 'A'
+Private definition 'A' in 'PrivatesObj' is never used
     */
 
     private val field = 1 /* assert: Unused
     ^^^^^^^^^^^^^^^^^^^^^
-Unused private field 'field'
+Private definition 'field' in 'PrivatesObj' is never used
     */
   }
 
