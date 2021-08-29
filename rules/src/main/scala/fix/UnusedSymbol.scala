@@ -18,10 +18,15 @@ case class UnusedLocal(sym: Symbol, pos: Position) extends UnusedSymbol {
     )
   }
 }
-case class UnusedParam(sym: Symbol, owner: Symbol, pos: Position) extends UnusedSymbol {
+case class UnusedParam(sym: Symbol, paramTree: Tree, owner: Symbol, pos: Position) extends UnusedSymbol {
   override def toDiagnostic(implicit doc: Symtab): Diagnostic = {
+    val name = sym.getDisplayName
+    // TODO: should be tested by symbol.info.map(_.isGiven)
+    // update scala3 https://github.com/lampepfl/dotty/pull/13239
+    // and update scalameta and scalafix needed
+    val paramName = if (name.nonEmpty) name else s"using ${paramTree.syntax}"
     UnusedDiagnostic.UnusedParameter(
-      sym.getDisplayName,
+      paramName,
       owner.getDisplayName,
       pos,
     )

@@ -125,14 +125,14 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
       case tree: Term.Function if config.params =>
         tree.params.foreach { param =>
           if (param.name.value.nonEmpty) // (_: Int) => 42 has name ''
-            registerUnused(UnusedParam(param.symbol, tree.symbol, param.pos))
+            registerUnused(UnusedParam(param.symbol, param, tree.symbol, param.pos))
         }
       case tree: Defn.Def if config.params =>
         for {
           params <- tree.paramss
           param <- params
         } yield {
-          registerUnused(UnusedParam(param.symbol, tree.symbol, param.pos))
+          registerUnused(UnusedParam(param.symbol, param, tree.symbol, param.pos))
         }
 
       case tree: Defn if tree.symbol.isLocal && config.locals =>
