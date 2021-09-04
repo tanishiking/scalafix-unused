@@ -9,9 +9,7 @@ package scala2
 
 class StableAccessors {
   private var s1: Int = 0 // assert: Unused
-  // TODO?
   private var s2: Int = 0 // warn, never set
-  // TODO: warn never get
   private var s3: Int = 0
   private var s4: Int = 0 // no warn
 

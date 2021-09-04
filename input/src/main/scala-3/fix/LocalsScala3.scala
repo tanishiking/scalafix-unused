@@ -22,7 +22,7 @@ Local definition 'x' is never used
     println(1)
   
   def localsGivenAlias() =
-    // TODO: false-negative
+    // TODO: false-negative ???
     given x: Int = 1
     println(1)
   
@@ -59,6 +59,7 @@ Local definition 'incl' is never used
 end Pos 
 
 object Neg:
+  def foo(using x: Int) = println(x)
   def locals1() =
     val x = 1
     println(x)
@@ -69,7 +70,7 @@ object Neg:
   
   def localsAnonymousGiven() =
     given Int = 1
-    println(given_Int) // TODO: test with synthetics
+    foo
   
   def localEnum =
     // TODO: false-positive

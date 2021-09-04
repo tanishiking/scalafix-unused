@@ -52,6 +52,14 @@ Private definition 'field' in 'PrivatesObj' is never used
     private type A = Int // assert: Unused
     private val field = 1 // assert: Unused
   }
+
+  case class PrivateClass2(
+      private val x: Int,
+      private val y: Int // assert: Unused
+  ) {
+    def foo = x
+  }
+
 }
 
 

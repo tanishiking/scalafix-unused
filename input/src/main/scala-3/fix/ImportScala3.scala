@@ -33,7 +33,6 @@ import scala.math.{max, min} /* assert: Unused
 Unused import 'min'
 */
 
-// TODO: better warning message and position
 import scala.concurrent.* /* assert: Unused
        ^^^^^^^^^^^^^^^^^^
 Unused import 'concurrent'
@@ -56,7 +55,7 @@ object B:
   import A.*
   import A.given // assert: Unused
   def print =
-    f(using tc)
+    f
     println(v)
 
 object C:

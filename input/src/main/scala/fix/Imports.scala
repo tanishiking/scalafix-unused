@@ -37,7 +37,6 @@ import scala.math.{max, min} /* assert: Unused
 Unused import 'min'
 */
 
-// TODO: better warning message and position
 import scala.concurrent._ /* assert: Unused
        ^^^^^^^^^^^^^^^^^^
 Unused import 'concurrent'
