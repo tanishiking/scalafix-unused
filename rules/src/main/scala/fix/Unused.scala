@@ -234,11 +234,14 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
         }
 
       case tree if !tree.symbol.isNone && !tree.is[Defn] =>
-        val occurrence = SymbolOccurrence(
-          tree.symbol,
-          tree.pos
-        )
-        occurrences.add(occurrence)
+        val isEndmarker = tree.parent.map(_.is[Term.EndMarker]).getOrElse(false)
+        if (!isEndmarker) {
+          val occurrence = SymbolOccurrence(
+            tree.symbol,
+            tree.pos
+          )
+          occurrences.add(occurrence)
+        }
     }
 
     occurrences.foreach { occurrence =>

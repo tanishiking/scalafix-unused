@@ -12,6 +12,10 @@ class MultiCtor(val i: Int):
   def this() =
     this(23)
   end this
+
+  private def foo = // assert: Unused
+    1
+  end foo
 end MultiCtor
 
 def topLevelMethod: String =
