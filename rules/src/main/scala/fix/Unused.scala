@@ -210,12 +210,20 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
               }
             } yield range
 
+            def handleWildcard(): Unit = {
+              if (!isDisabled(tree.ref.symbol) && tree.ref.symbol.isPackage)
+                registerUnusedPkg(
+                  UnusedImport(tree.ref.symbol, tree.pos, scope))
+            }
+
             importee match {
-              case wildcard: Importee.Wildcard =>
-                // Limitation: don't warn wildcard import other than from package
-                if (!isDisabled(tree.ref.symbol) && tree.ref.symbol.isPackage)
-                  registerUnusedPkg(
-                    UnusedImport(tree.ref.symbol, tree.pos, scope))
+              // Limitation: don't warn wildcard import other than from package
+              case w: Importee.Wildcard =>
+                handleWildcard
+              case givenAll: Importee.GivenAll =>
+                handleWildcard
+              case _: Importee.Given =>
+                handleWildcard
               case other if !isDisabled(other.symbol) =>
                 if (other.symbol.isPackage)
                   registerUnusedPkg(

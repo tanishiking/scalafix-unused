@@ -41,8 +41,6 @@ Unused import 'concurrent'
 object Imports3 {
   val m = max(1, 2)
 }
-
-
 object A:
   class TC
   given tc: TC = ???
@@ -53,19 +51,19 @@ object A:
 
 object B:
   import A.*
-  import A.given // assert: Unused
+  import A.given
   def print =
     f
     println(v)
 
 object C:
   import A.*
-  import A.given // assert: Unused
+  import A.given
   def print =
     println(v)
 
 object D:
   // TODO given String shouldn't be asserted
-  import A.given Int // assert: Unused
-  import A.given String // assert: Unused
+  import A.given Int
+  import A.given String
   println(ts)
