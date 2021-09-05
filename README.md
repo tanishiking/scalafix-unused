@@ -6,10 +6,10 @@
 
 ## Configuration
 ### Default Configuration
-```
+```scala
 Unused {
   params = true,
-  locals = ture,
+  locals = true,
   imports = true,
   privates = true,
   patvars = true,

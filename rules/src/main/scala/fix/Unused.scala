@@ -8,6 +8,9 @@ import metaconfig.Configured
 import scala.annotation.unused
 import scala.tools.nsc.Reporting
 
+import Symbols._
+import Enrichments._
+import scalafix.ScalafixAccess._
 
 case class SymbolOccurrence(
     sym: Symbol,
@@ -15,17 +18,18 @@ case class SymbolOccurrence(
 )
 
 class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
-  import Symbols._
-  import Enrichments._
-  import scalafix.ScalafixAccess._
 
   def this() = this(UnusedConfig.default)
 
-  override def withConfiguration(config: Configuration): Configured[Rule] =
+  override def withConfiguration(
+    config: Configuration
+  ): Configured[Rule] =
     config.conf
       .getOrElse("Unused")(this.config)
       .map { newConfig => new Unused(newConfig) }
-  override def fix(implicit doc: SemanticDocument): Patch = {
+  override def fix(
+    implicit doc: SemanticDocument
+  ): Patch = {
     val unusedSyms = m.HashMap[Symbol, UnusedSymbol]()
 
     val unusedPkgs = new m.HashMap[Symbol, m.Set[UnusedImport]]
@@ -51,18 +55,18 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
       }
     }
 
-    def registerUnused(
+    def register(
         unused: UnusedSymbol,
     ): Unit = {
       if (!visited.contains(unused.sym))
         unusedSyms(unused.sym) = unused
     }
-    def registerUnusedImport(
+    def registerImport(
       unused: UnusedImport
     ): Unit = {
       unusedImports.addBinding(unused.sym.ensureNormalized, unused)
     }
-    def registerUnusedPkg(unused: UnusedImport): Unit = {
+    def registerPkg(unused: UnusedImport): Unit = {
       unusedPkgs.addBinding(unused.sym.normalized, unused)
     }
 
@@ -71,14 +75,14 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
         case cls: Defn.Class =>
           cls.ctor.paramss.flatten.foreach { param =>
             if (param.symbol.info.map(_.isPrivate).getOrElse(false))
-              registerUnused(UnusedPrivate(param.symbol, owner.symbol, param.pos))
+              register(UnusedPrivate(param.symbol, owner.symbol, param.pos))
           }
         case _ =>
       }
       templ.stats.foreach { stat =>
         stat match {
           case defn: Defn if defn.isPrivateDef =>
-            registerUnused(UnusedPrivate(defn.symbol, owner.symbol, defn.pos))
+            register(UnusedPrivate(defn.symbol, owner.symbol, defn.pos))
           case _ => ()
         }
       }
@@ -89,7 +93,7 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
           case defn: Defn =>
             if (config.privates && defn.isPrivateDef) {
               val unused = UnusedPrivate(defn.symbol, owner.symbol, defn.pos)
-              registerUnused(unused)
+              register(unused)
             }
             visited += defn.symbol
           case decl: Decl =>
@@ -110,7 +114,7 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
           case Some(found)
               if normalized.value.startsWith(pkgPrefix) &&
                 pkgPrefix.length > longestPrefix
-                  .map(_._1.value.length)
+                  .map { case (sym, _) => sym.value.length }
                   .getOrElse(0) =>
             longestPrefix = Some((pkg.normalized, found))
           case _ => ()
@@ -122,11 +126,11 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
       }
     }
 
-    doc.tree.collect {
+    doc.tree.traverse {
       case tree: Term.Function if config.params =>
         tree.params.foreach { param =>
           if (param.name.value.nonEmpty) // (_: Int) => 42 has name ''
-            registerUnused(UnusedParam(param.symbol, param, tree.symbol, param.pos, tree.pos.asRange))
+            register(UnusedParam(param.symbol, param, tree.symbol, param.pos, tree.pos.asRange))
         }
       case tree: Defn.Def if config.params =>
         val methodName = tree.symbol.getDisplayName
@@ -136,12 +140,12 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
             params <- tree.paramss
             param <- params
           } yield {
-            registerUnused(UnusedParam(param.symbol, param, tree.symbol, param.pos, tree.pos.asRange))
+            register(UnusedParam(param.symbol, param, tree.symbol, param.pos, tree.pos.asRange))
           }
         }
 
       case tree: Defn if tree.symbol.isLocal && config.locals =>
-        registerUnused(UnusedLocal(tree.symbol, tree.pos))
+        register(UnusedLocal(tree.symbol, tree.pos))
 
       // Register unused private fields
       // e.g.
@@ -189,7 +193,7 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
       // ```
       // as unused pattern value
       case tree: Pat.Var if tree.symbol.isLocal && config.patvars =>
-        registerUnused(UnusedPatVar(tree.symbol, tree.pos))
+        register(UnusedPatVar(tree.symbol, tree.pos))
 
       case tree: Importer if config.imports =>
         def isDisabled(sym: Symbol): Boolean = {
@@ -212,7 +216,7 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
 
             def handleWildcard(): Unit = {
               if (!isDisabled(tree.ref.symbol) && tree.ref.symbol.isPackage)
-                registerUnusedPkg(
+                registerPkg(
                   UnusedImport(tree.ref.symbol, tree.pos, scope))
             }
 
@@ -226,10 +230,10 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
                 handleWildcard
               case other if !isDisabled(other.symbol) =>
                 if (other.symbol.isPackage)
-                  registerUnusedPkg(
+                  registerPkg(
                     UnusedImport(other.symbol, other.pos, scope))
                 else
-                  registerUnusedImport(
+                  registerImport(
                     UnusedImport(
                       other.symbol,
                       other.pos,
