@@ -31,17 +31,18 @@ val inputSettings = List(
 
 inThisBuild(
   List(
-    organization := "com.example",
-    homepage := Some(url("https://github.com/com/example")),
+    name := "scalafix-unused",
+    organization := "com.github.tanishiking",
+    homepage := Some(url("https://github.com/tanishiking/scalafix-unused")),
     licenses := List(
       "Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")
     ),
     developers := List(
       Developer(
-        "example-username",
-        "Example Full Name",
-        "example@email.com",
-        url("https://example.com")
+        "tanishiking",
+        "Rikito Taniguchi",
+        "rikiriki1238@gmail.com",
+        url("https://github.com/tanishiking")
       )
     ),
     semanticdbEnabled := true,
