@@ -63,7 +63,7 @@ lazy val `scalafix-unused` = (project in file("."))
 
 lazy val rules = projectMatrix
   .settings(
-    moduleName := "scalafix",
+    moduleName := "scalafix-unused",
     libraryDependencies += "ch.epfl.scala" %% "scalafix-core" % V.scalafixVersion
   )
   .defaultAxes(VirtualAxis.jvm)
