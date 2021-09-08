@@ -5,8 +5,6 @@ import scala.meta._
 import collection.{mutable => m}
 
 import metaconfig.Configured
-import scala.annotation.unused
-import scala.tools.nsc.Reporting
 
 import Symbols._
 import Enrichments._
@@ -222,9 +220,9 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
 
             importee match {
               // Limitation: don't warn wildcard import other than from package
-              case w: Importee.Wildcard =>
+              case _: Importee.Wildcard =>
                 handleWildcard
-              case givenAll: Importee.GivenAll =>
+              case _: Importee.GivenAll =>
                 handleWildcard
               case _: Importee.Given =>
                 handleWildcard

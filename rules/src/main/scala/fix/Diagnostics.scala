@@ -1,6 +1,6 @@
 package fix
 
-import scalafix.v1._
+import scalafix.v1._ // scalafix:ok
 import scala.meta._
 
 object UnusedDiagnostic {

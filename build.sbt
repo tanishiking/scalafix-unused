@@ -64,6 +64,7 @@ lazy val `scalafix-unused` = (project in file("."))
 lazy val rules = projectMatrix
   .settings(
     moduleName := "scalafix-unused",
+    scalacOptions += "-P:semanticdb:synthetics:on",
     libraryDependencies += "ch.epfl.scala" %% "scalafix-core" % V.scalafixVersion
   )
   .defaultAxes(VirtualAxis.jvm)
@@ -76,6 +77,7 @@ lazy val input = projectMatrix
   )
   .defaultAxes(VirtualAxis.jvm)
   .jvmPlatform(scalaVersions = rulesCrossVersions :+ scala3Version)
+  .disablePlugins(ScalafixPlugin)
 
 lazy val output = projectMatrix
   .settings(

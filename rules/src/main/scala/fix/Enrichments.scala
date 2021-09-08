@@ -71,7 +71,7 @@ object Enrichments {
       case d: Defn.EnumCase         => d.mods
       case d: Defn.RepeatedEnumCase => d.mods
       case d: Defn.GivenAlias       => d.mods
-      case d: Defn.ExtensionGroup   => Nil
+      case _: Defn.ExtensionGroup   => Nil
       case d: Defn.Def              => d.mods
       case d: Defn.Macro            => d.mods
       case d: Defn.Type             => d.mods
