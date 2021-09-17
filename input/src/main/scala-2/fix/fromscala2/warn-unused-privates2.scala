@@ -45,7 +45,6 @@ class StableAccessors {
 }
 
 object `classof something` {
-  // TODO
-  private class intrinsically // assert: Unused
+  private class intrinsically
   def f = classOf[intrinsically].toString()
 }
