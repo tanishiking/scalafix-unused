@@ -42,6 +42,8 @@ object Enrichments {
   implicit class RichSymbol(sym: Symbol) {
     def getDisplayName(implicit doc: Symtab): String =
       sym.info.map(_.displayName).getOrElse(sym.displayName)
+    def isOverridden(implicit doc: Symtab): Boolean =
+      sym.info.map(_.overriddenSymbols.nonEmpty).getOrElse(false)
     def isPackage: Boolean =
       !sym.isNone && !sym.isMulti && sym.value.last == '/'
     def isMulti: Boolean = sym.value.startsWith(";")

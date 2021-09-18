@@ -29,34 +29,6 @@ Parameter value 'param' in method 'f2' is never used
 
     }
 
-    trait InterFace {
-      /** Call something. */
-      def call(a: Int, b: String, c: Double): Int
-      def call2(a: Int, b: String): Int
-    }
-
-    class BadAPI extends InterFace {
-      def f(a: Int,
-            b: String, // assert: Unused
-            c: Double): Int = {
-        println(c)
-        a
-      }
-      override def call(
-        a: Int,
-        b: String, // no warn, required by superclass
-        c: Double
-      ): Int = {
-        println(c)
-        a
-      }
-
-      // TODO: check is overriding, using overriddenSymbols
-      // not yet available from current scalameta version?
-      def call2(
-        a: Int, b: String // assert: Unused
-      ): Int = 1
-    }
   }
 
   object Neg {

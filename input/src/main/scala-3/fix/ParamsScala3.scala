@@ -28,3 +28,33 @@ Parameter value 'y' in method 'pos2' is never used
     def neg1(x: Int)(using y: Int) =
       x + y
   end Neg
+
+
+object Interface:
+  trait InterFace {
+    /** Call something. */
+    def call(a: Int, b: String, c: Double): Int
+    def call2(a: Int, b: String): Int
+  }
+
+  class BadAPI extends InterFace {
+    def f(a: Int,
+          b: String, // assert: Unused
+          c: Double): Int = {
+      println(c)
+      a
+    }
+    override def call(
+      a: Int,
+      b: String, // no warn, required by superclass
+      c: Double
+    ): Int = {
+      println(c)
+      a
+    }
+
+    def call2(
+      a: Int, b: String
+    ): Int = 1
+  }
+end Interface

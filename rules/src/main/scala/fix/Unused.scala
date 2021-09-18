@@ -8,7 +8,6 @@ import metaconfig.Configured
 
 import Symbols._
 import Enrichments._
-import scalafix.ScalafixAccess._
 
 case class SymbolOccurrence(
     sym: Symbol,
@@ -132,8 +131,8 @@ class Unused(config: UnusedConfig) extends SemanticRule("Unused") {
         }
       case tree: Defn.Def if config.params =>
         val methodName = tree.symbol.getDisplayName
-        val isOverride = tree.symbol.isOverride || tree.mods.exists(mod => mod.is[Mod.Override])
-        if (!config.disabledParamsOfMethods.exists(_ == methodName) && !isOverride) {
+        val isOverridden = tree.symbol.isOverridden || tree.mods.exists(mod => mod.is[Mod.Override])
+        if (!config.disabledParamsOfMethods.exists(_ == methodName) && !isOverridden) {
           for {
             params <- tree.paramss
             param <- params

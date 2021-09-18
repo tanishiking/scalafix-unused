@@ -20,7 +20,9 @@ object ImportsNeg {
   val nonfatal = util.control.NonFatal(new Exception("test"))
 
   val immutableHashset = HashSet[Int]() 
-  val immutableHashmap = HM[Int, Int]()
+  // TODO: Scala3
+  // Should be mark as used by HM
+  val immutableHashmap: scala.collection.immutable.HashMap[Int, Int] = HM[Int, Int]()
 
   val bigint = BigInt(1)
   val bigdecimal = BigDecimal(1)
