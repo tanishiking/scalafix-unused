@@ -17,6 +17,7 @@ def crossSetting[A](
     case _ => Nil
   }
 
+
 val inputSettings = List(
   scalacOptions ++= crossSetting(
     scalaVersion.value,
@@ -133,3 +134,44 @@ lazy val tests = projectMatrix
   )
   .dependsOn(rules)
   .enablePlugins(ScalafixTestkitPlugin)
+
+
+lazy val benchmarks = projectMatrix
+  .settings(
+    publish / skip := true,
+    libraryDependencies += "ch.epfl.scala" % "scalafix-testkit" % V.scalafixVersion % Test cross CrossVersion.full,
+    scalafixTestkitOutputSourceDirectories :=
+      TargetAxis
+        .resolve(output, Compile / unmanagedSourceDirectories)
+        .value,
+    scalafixTestkitInputSourceDirectories :=
+      TargetAxis
+        .resolve(input, Compile / unmanagedSourceDirectories)
+        .value,
+    scalafixTestkitInputClasspath :=
+      TargetAxis.resolve(input, Compile / fullClasspath).value,
+    scalafixTestkitInputScalacOptions :=
+      TargetAxis.resolve(input, Compile / scalacOptions).value,
+    scalafixTestkitInputScalaVersion :=
+      TargetAxis.resolve(input, Compile / scalaVersion).value,
+
+    Jmh / sourceDirectory := (Test / sourceDirectory).value,
+    Jmh / classDirectory := (Test / classDirectory).value,
+    Jmh / dependencyClasspath := (Test / dependencyClasspath).value,
+    // rewire tasks, so that 'jmh:run' automatically invokes 'jmh:compile' (otherwise a clean 'jmh:run' would fail)
+    Jmh / compile := (Jmh / compile).dependsOn(Test / compile).value,
+    Jmh / run := (Jmh / run).dependsOn(Jmh / Keys.compile).evaluated,
+  )
+  .defaultAxes(
+    rulesCrossVersions.map(VirtualAxis.scalaABIVersion) :+ VirtualAxis.jvm: _*
+  )
+  .customRow(
+    scalaVersions = Seq(V.scala213),
+    axisValues = Seq(TargetAxis(V.scala213), VirtualAxis.jvm),
+    settings = Seq(
+      scalacOptions += "-P:semanticdb:synthetics:on",
+    )
+  )
+  .dependsOn(rules)
+  .enablePlugins(ScalafixTestkitPlugin)
+  .enablePlugins(JmhPlugin)
