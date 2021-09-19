@@ -23,7 +23,6 @@ class ImplicitConversion {
   // extension methods
   message
     .stripSuffix("h")
-  tuple + "Hello"
 
   // implicit conversions
   val x: Int = message
