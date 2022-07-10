@@ -1,7 +1,7 @@
 lazy val V = _root_.scalafix.sbt.BuildInfo
 
 lazy val rulesCrossVersions = Seq(V.scala213, V.scala212)
-lazy val scala3Version = "3.1.1-RC1"
+lazy val scala3Version = "3.1.3"
 
 def isScala2(v: Option[(Long, Long)]): Boolean = v.exists(_._1 == 2)
 def isScala3(v: Option[(Long, Long)]): Boolean = v.exists(_._1 == 3)
